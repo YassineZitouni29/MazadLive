@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Auctions | MazaLive{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+    <div class="container reveal-on-scroll">
+        <span class="eyebrow">Marketplace</span>
+        <h1>Browse auctions with focus.</h1>
+        <p>Search by keyword, price, category, and status, then sort by urgency or traction.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container filters-layout">
+        <aside class="panel filter-panel reveal-on-scroll">
+            <div class="panel-heading">
+                <h2>Filters</h2>
+                <p class="muted-copy">Keep the search tight and useful.</p>
+            </div>
+            <form method="get" class="filter-form">
+                <div class="field-group">
+                    <label for="{{ form.query.id_for_label }}">Search</label>
+                    {{ form.query }}
+                </div>
+                <div class="field-group">
+                    <label for="{{ form.category.id_for_label }}">Category</label>
+                    {{ form.category }}
+                </div>
+                <div class="field-group">
+                    <label for="{{ form.status.id_for_label }}">Status</label>
+                    {{ form.status }}
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label for="{{ form.min_price.id_for_label }}">Min price</label>
+                        {{ form.min_price }}
+                    </div>
+                    <div class="field-group">
+                        <label for="{{ form.max_price.id_for_label }}">Max price</label>
+                        {{ form.max_price }}
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label for="{{ form.sort.id_for_label }}">Sort by</label>
+                    {{ form.sort }}
+                </div>
+                <div class="action-row">
+                    <button class="button" type="submit">Apply filters</button>
+                    <a class="button button-ghost" href="{% url 'auction_list' %}">Reset</a>
+                </div>
+            </form>
+        </aside>
+
+        <div class="results-column">
+            <div class="results-head reveal-on-scroll">
+                <div>
+                    <span class="eyebrow">Results</span>
+                    <h2>{{ page_obj.paginator.count }} auction{{ page_obj.paginator.count|pluralize }}</h2>
+                </div>
+                <a class="button button-secondary button-small" href="{% url 'auction_create' %}">Create listing</a>
+            </div>
+
+            <div class="card-grid">
+                {% for auction in page_obj %}
+                    {% include "auctions/_auction_card.html" %}
+                {% empty %}
+                    <div class="empty-state">
+                        <h3>No auctions match these filters</h3>
+                        <p>Relax one or two constraints and the grid should open up again.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a class="button button-ghost button-small" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                    {% endif %}
+                    <span class="pagination-current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <a class="button button-ghost button-small" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

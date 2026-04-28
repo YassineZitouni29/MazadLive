@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load auction_extras %}
+
+{% block title %}{{ auction.title }} | MazaLive{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container detail-layout">
+        <div class="detail-gallery reveal-on-scroll">
+            {% if auction.image_url %}
+                <img class="detail-image" src="{{ auction.image_url }}" alt="{{ auction.title }}">
+            {% else %}
+                <div class="detail-placeholder">{{ auction.category.name }}</div>
+            {% endif %}
+            <div class="panel detail-story">
+                <span class="eyebrow">{{ auction.category.name }}</span>
+                <h1>{{ auction.title }}</h1>
+                <p>{{ auction.description }}</p>
+            </div>
+        </div>
+
+        <aside class="detail-panel reveal-on-scroll">
+            <span class="status-pill status-{{ auction.status }}">{{ auction.get_status_display }}</span>
+            <h2>{{ auction.current_price|money }}</h2>
+            <p class="muted-copy">Current leading bid</p>
+
+            <ul class="info-list">
+                <li><span>Seller</span><strong>{{ auction.seller.username }}</strong></li>
+                <li><span>Reserve</span><strong>{% if auction.reserve_price %}{{ auction.reserve_price|money }}{% else %}No reserve{% endif %}</strong></li>
+                <li><span>Starts</span><strong>{{ auction.start_time|date:"M j, H:i" }}</strong></li>
+                <li><span>Ends</span><strong class="countdown" data-countdown="{{ auction.end_time|date:'c' }}">{{ auction.end_time|date:"M j, H:i" }}</strong></li>
+                <li><span>Next bid</span><strong>{{ auction.minimum_next_bid|money }}</strong></li>
+            </ul>
+
+            {% if auction.status == 'live' %}
+                {% if user.is_authenticated and user != auction.seller %}
+                    <form class="panel form-panel" method="post" action="{% url 'place_bid' auction.pk %}">
+                        {% csrf_token %}
+                        <div class="field-group">
+                            <label for="{{ bid_form.amount.id_for_label }}">Your bid</label>
+                            {{ bid_form.amount }}
+                        </div>
+                        <div class="field-group">
+                            <label for="{{ bid_form.auto_bid_max.id_for_label }}">Auto-bid max</label>
+                            {{ bid_form.auto_bid_max }}
+                            {% if user_auto_bid %}
+                                <small class="muted-copy">Current auto-bid ceiling: {{ user_auto_bid.max_amount|money }}</small>
+                            {% endif %}
+                        </div>
+                        <button class="button" type="submit">Place bid</button>
+                    </form>
+                {% elif user == auction.seller %}
+                    <div class="panel inset-panel">
+                        <strong>You are the seller.</strong>
+                        <p class="muted-copy">Use the dashboard to monitor bids and performance.</p>
+                    </div>
+                {% else %}
+                    <div class="panel inset-panel">
+                        <strong>Authentication required.</strong>
+                        <p class="muted-copy">Log in or create an account to join the bidding.</p>
+                        <a class="button button-secondary button-small" href="{% url 'login' %}?next={% url 'auction_detail' auction.pk %}">Log in</a>
+                    </div>
+                {% endif %}
+            {% elif auction.status == 'scheduled' %}
+                <div class="panel inset-panel">
+                    <strong>This auction has not started yet.</strong>
+                    <p class="muted-copy">Watch it now and return when the countdown reaches zero.</p>
+                </div>
+            {% elif auction.status == 'sold' %}
+                <div class="panel inset-panel">
+                    <strong>Winner: {{ auction.winner.username }}</strong>
+                    <p class="muted-copy">The auction closed successfully at {{ auction.current_price|money }}.</p>
+                </div>
+            {% else %}
+                <div class="panel inset-panel">
+                    <strong>Bidding is closed.</strong>
+                    <p class="muted-copy">This lot is no longer accepting bids.</p>
+                </div>
+            {% endif %}
+
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'toggle_watchlist' auction.pk %}">
+                    {% csrf_token %}
+                    <button class="button button-ghost" type="submit">
+                        {% if watchlisted %}Remove from watchlist{% else %}Add to watchlist{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+        </aside>
+    </div>
+</section>
+
+<section class="section section-muted">
+    <div class="container detail-subgrid">
+        <div class="panel reveal-on-scroll">
+            <div class="panel-heading">
+                <h2>Bid history</h2>
+                <p class="muted-copy">Latest visible bids on the auction.</p>
+            </div>
+            <div class="stack-list">
+                {% for bid in recent_bids %}
+                    <div class="stack-item bid-item">
+                        <div>
+                            <strong>{{ bid.bidder.username }}</strong>
+                            <span>{{ bid.created_at|date:"M j, H:i" }}</span>
+                        </div>
+                        <div class="bid-meta">
+                            <strong>{{ bid.amount|money }}</strong>
+                            <span>{% if bid.is_auto_bid %}Auto-bid{% else %}Manual bid{% endif %}</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="muted-copy">No bids yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="panel reveal-on-scroll">
+            <div class="panel-heading">
+                <h2>Shipping</h2>
+                <p class="muted-copy">What the seller wants buyers to know.</p>
+            </div>
+            <p>{{ auction.shipping_details|default:"No shipping notes were provided for this lot." }}</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container section-header">
+        <div>
+            <span class="eyebrow">Related lots</span>
+            <h2>More from this category</h2>
+        </div>
+    </div>
+    <div class="container card-grid compact-grid">
+        {% for auction in related_auctions %}
+            {% include "auctions/_auction_card.html" %}
+        {% empty %}
+            <div class="empty-state">
+                <h3>No related auctions yet</h3>
+                <p>As more listings are created, this row will become useful.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

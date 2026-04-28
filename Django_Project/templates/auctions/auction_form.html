@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Create Auction | MazaLive{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+    <div class="container reveal-on-scroll">
+        <span class="eyebrow">Seller studio</span>
+        <h1>Create a listing that feels credible.</h1>
+        <p>Keep the copy clear, set a real reserve, and choose an end time that creates urgency without confusion.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container detail-subgrid">
+        <div class="panel reveal-on-scroll">
+            <div class="panel-heading">
+                <h2>Listing details</h2>
+                <p class="muted-copy">Everything important should fit on one thoughtful form.</p>
+            </div>
+            <form method="post" class="form-grid">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="field-group {% if field.name == 'description' or field.name == 'shipping_details' %}field-span{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="muted-copy">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <small class="form-error">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <button class="button" type="submit">Publish auction</button>
+            </form>
+        </div>
+
+        <aside class="panel reveal-on-scroll">
+            <span class="eyebrow">Seller notes</span>
+            <h2>Simple rules, better outcomes</h2>
+            <ul class="feature-list">
+                <li>Use an image URL that frames the item tightly.</li>
+                <li>Reserve prices protect value, but overly high ones slow bidding.</li>
+                <li>Shipping details should answer the questions buyers will ask first.</li>
+            </ul>
+        </aside>
+    </div>
+</section>
+{% endblock %}

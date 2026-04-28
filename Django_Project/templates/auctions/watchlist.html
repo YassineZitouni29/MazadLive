@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Watchlist | MazaLive{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+    <div class="container reveal-on-scroll">
+        <span class="eyebrow">Watchlist</span>
+        <h1>Items worth returning to.</h1>
+        <p>Keep near-closing auctions and long-shot bids in a single focused list.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container card-grid">
+        {% for auction in auctions %}
+            {% include "auctions/_auction_card.html" %}
+        {% empty %}
+            <div class="empty-state">
+                <h3>Your watchlist is empty</h3>
+                <p>Add a few auctions to track price movement and closing times.</p>
+                <a class="button button-secondary" href="{% url 'auction_list' %}">Browse auctions</a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

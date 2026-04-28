@@ -1,0 +1,31 @@
+{% load auction_extras %}
+<article class="auction-card reveal-on-scroll">
+    <a class="card-media" href="{% url 'auction_detail' auction.pk %}">
+        {% if auction.image_url %}
+            <img class="card-image" src="{{ auction.image_url }}" alt="{{ auction.title }}">
+        {% else %}
+            <div class="card-placeholder">
+                <span>{{ auction.category.name }}</span>
+            </div>
+        {% endif %}
+        <span class="status-pill status-{{ auction.status }}">{{ auction.get_status_display }}</span>
+    </a>
+    <div class="card-body">
+        <div class="card-meta">
+            <span>{{ auction.category.name }}</span>
+            <span class="countdown" data-countdown="{{ auction.end_time|date:'c' }}">Ends {{ auction.end_time|date:"M j, H:i" }}</span>
+        </div>
+        <h3 class="card-title"><a href="{% url 'auction_detail' auction.pk %}">{{ auction.title }}</a></h3>
+        <p class="card-summary">{{ auction.description|truncatewords:22 }}</p>
+        <div class="card-footer">
+            <div>
+                <span class="caption">Current bid</span>
+                <strong>{{ auction.current_price|money }}</strong>
+            </div>
+            <div>
+                <span class="caption">Watching</span>
+                <strong>{{ auction.watchers_total|default:auction.watchers_count }}</strong>
+            </div>
+        </div>
+    </div>
+</article>

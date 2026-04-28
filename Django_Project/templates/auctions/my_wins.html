@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Won Auctions | MazaLive{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+    <div class="container reveal-on-scroll">
+        <span class="eyebrow">Your wins</span>
+        <h1>Closed lots you secured.</h1>
+        <p>Every won auction stays visible here so the post-sale step stays organized.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container card-grid">
+        {% for auction in auctions %}
+            {% include "auctions/_auction_card.html" %}
+        {% empty %}
+            <div class="empty-state">
+                <h3>No wins yet</h3>
+                <p>Successful auction wins will appear here after live lots close.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

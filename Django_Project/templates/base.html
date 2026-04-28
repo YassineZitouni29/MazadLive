@@ -1,0 +1,113 @@
+{% load static auction_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}MazaLive{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <script defer src="{% static 'js/site.js' %}"></script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <div class="site-backdrop"></div>
+    <header class="site-header">
+        <div class="container header-grid">
+            <a class="brand" href="{% url 'home' %}">
+                <span class="brand-mark">Maza</span><span class="brand-live">Live</span>
+            </a>
+            <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" data-nav-toggle>
+                <span></span>
+                <span></span>
+            </button>
+            <nav class="site-nav" data-nav>
+                <a href="{% url 'auction_list' %}">Browse</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'auction_create' %}">Create</a>
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'watchlist' %}">Watchlist</a>
+                    <a href="{% url 'my_wins' %}">Won</a>
+                {% else %}
+                    <a href="{% url 'signup' %}">Sell on MazaLive</a>
+                {% endif %}
+            </nav>
+            <div class="header-side">
+                {% if user.is_authenticated %}
+                    <a class="user-chip" href="{% url 'dashboard' %}">
+                        {{ user.username }}
+                        {% if unread_notifications %}
+                            <span class="chip-badge">{{ unread_notifications }}</span>
+                        {% endif %}
+                    </a>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button class="button button-ghost button-small" type="submit">Log out</button>
+                    </form>
+                {% else %}
+                    <a class="button button-ghost button-small" href="{% url 'login' %}">Log in</a>
+                    <a class="button button-small" href="{% url 'signup' %}">Join now</a>
+                {% endif %}
+            </div>
+        </div>
+        {% if nav_categories %}
+            <div class="container category-ribbon">
+                {% for category in nav_categories %}
+                    <a class="ribbon-link" href="{% url 'auction_list' %}?category={{ category.id }}">{{ category.name }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </header>
+
+    {% if user.is_authenticated and unread_notifications %}
+        <section class="notification-bar">
+            <div class="container notification-grid">
+                <div>
+                    <strong>{{ unread_notifications }} fresh update{{ unread_notifications|pluralize }}</strong>
+                    <span class="muted-copy">Outbids, wins, and seller activity are surfaced here.</span>
+                </div>
+                <div class="notification-inline">
+                    {% for item in latest_notifications|slice:":2" %}
+                        <span class="notification-pill">
+                            {{ item.message }}
+                        </span>
+                    {% endfor %}
+                </div>
+                <form method="post" action="{% url 'mark_notifications_read' %}">
+                    {% csrf_token %}
+                    <button class="button button-secondary button-small" type="submit">Mark read</button>
+                </form>
+            </div>
+        </section>
+    {% endif %}
+
+    {% if messages %}
+        <div class="container flash-stack">
+            {% for message in messages %}
+                <div class="flash flash-{{ message.tags|default:'info' }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main class="site-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <p class="footer-brand">MazaLive</p>
+                <p class="muted-copy">A focused auction marketplace built for timed bidding, clean state transitions, and confident selling.</p>
+            </div>
+            <div class="footer-links">
+                <a href="{% url 'auction_list' %}">Explore auctions</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'auction_create' %}">List an item</a>
+                    <a href="{% url 'dashboard' %}">Seller dashboard</a>
+                {% else %}
+                    <a href="{% url 'signup' %}">Create an account</a>
+                    <a href="{% url 'login' %}">Access your account</a>
+                {% endif %}
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

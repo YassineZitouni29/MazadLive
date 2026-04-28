@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load auction_extras %}
+
+{% block title %}MazaLive | Timed Auctions{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container hero-grid">
+        <div class="hero-copy reveal-on-scroll">
+            <span class="eyebrow">Timed auctions, built with calm</span>
+            <h1>Second-hand finds deserve a sharper stage.</h1>
+            <p>
+                MazaLive helps sellers launch polished auctions and lets bidders follow every move with clean watchlists,
+                auto-bid ceilings, and transparent winner selection.
+            </p>
+            <div class="action-row">
+                <a class="button" href="{% url 'auction_list' %}">Browse live auctions</a>
+                <a class="button button-secondary" href="{% url 'auction_create' %}">List an item</a>
+            </div>
+        </div>
+        <div class="hero-panel reveal-on-scroll">
+            <div class="stats-strip">
+                <div class="metric-card">
+                    <span class="caption">Live lots</span>
+                    <strong>{{ live_count }}</strong>
+                </div>
+                <div class="metric-card">
+                    <span class="caption">Active sellers</span>
+                    <strong>{{ seller_count }}</strong>
+                </div>
+                <div class="metric-card">
+                    <span class="caption">Bids placed</span>
+                    <strong>{{ bid_count }}</strong>
+                </div>
+            </div>
+            <div class="feature-panel">
+                <h2>Auction rhythm</h2>
+                <ul class="feature-list">
+                    <li>Launch scheduled or instant auctions with reserve pricing.</li>
+                    <li>Track watchlists, outbids, and wins without noisy screens.</li>
+                    <li>Keep the seller view focused on active listings and revenue.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container section-header">
+        <div>
+            <span class="eyebrow">Live now</span>
+            <h2>Auctions closing soon</h2>
+        </div>
+        <a class="text-link" href="{% url 'auction_list' %}">View all auctions</a>
+    </div>
+    <div class="container card-grid">
+        {% for auction in featured_live %}
+            {% include "auctions/_auction_card.html" %}
+        {% empty %}
+            <div class="empty-state">
+                <h3>No live auctions yet</h3>
+                <p>Create the first listing and the marketplace will populate from there.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section section-muted">
+    <div class="container feature-grid">
+        <div class="panel reveal-on-scroll">
+            <span class="eyebrow">Browse by category</span>
+            <h2>Built around real marketplace flows</h2>
+            <div class="pill-list">
+                {% for category in top_categories %}
+                    <a class="pill" href="{% url 'auction_list' %}?category={{ category.id }}">{{ category.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="panel reveal-on-scroll">
+            <span class="eyebrow">Upcoming</span>
+            <h2>Scheduled next</h2>
+            <div class="stack-list">
+                {% for auction in upcoming %}
+                    <a class="stack-item" href="{% url 'auction_detail' auction.pk %}">
+                        <strong>{{ auction.title }}</strong>
+                        <span>{{ auction.start_time|date:"M j, H:i" }} · {{ auction.starting_price|money }}</span>
+                    </a>
+                {% empty %}
+                    <p class="muted-copy">No scheduled auctions yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container section-header">
+        <div>
+            <span class="eyebrow">Recent results</span>
+            <h2>Sold lots</h2>
+        </div>
+    </div>
+    <div class="container card-grid compact-grid">
+        {% for auction in recent_sales %}
+            {% include "auctions/_auction_card.html" %}
+        {% empty %}
+            <div class="empty-state">
+                <h3>No completed sales yet</h3>
+                <p>Sold items will appear here once live auctions start closing.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
